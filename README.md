@@ -3,7 +3,6 @@
 ## Developer Notes
 
 WHMCS Documentation: http://docs.whmcs.com/Registrar_Module_Developer_Docs 
-Syra API Documentation: doc/ResellerAPIGude.pdf 
 
 ### Logging
 
