@@ -1,0 +1,3 @@
+[submodule "syra"]
+	path = syra
+	url = git://github.com/otilas/syra-php.git
