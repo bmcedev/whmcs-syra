@@ -1,8 +1,12 @@
 <?php
 
 $dir = realpath(dirname(__FILE__));
-
-include_once "{$dir}/syra/syra.php";
+include_once "{$dir}/syra/lib/base.php";
+include_once "{$dir}/syra/lib/contact.php";
+include_once "{$dir}/syra/lib/domain.php";
+include_once "{$dir}/syra/lib/host.php";
+include_once "{$dir}/syra/lib/transfer.php";
+include_once "{$dir}/syra/lib/reseller.php";
 
 function syra_getConfigArray() {
 	$configarray = array(
