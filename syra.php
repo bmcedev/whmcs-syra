@@ -41,7 +41,7 @@ function syra_ProcessAPIErrors($response) {
     $error_message = "";
     foreach ($response->Errors as $error) {  
       if($i==0) { $breaktag = ""; } else { $breaktag = "<br />"; }
-      $error_message = $error_message.$breaktag."<strong>".$error->Item.":</strong> ";
+      $error_message = $error_message.$breaktag."".$error->Item.": ";
       $error_message = $error_message. str_replace("reseller", "account", $error->Message);
       $i++;
     }
@@ -145,8 +145,19 @@ function syra_TransferDomain($params) {
   return $values;
 }
   
-function syra_RenewDomains($params) {
-  $values["error"] = "RENEW NOT IMPLEMENTED YET";
+function syra_RenewDomain($params) {
+  $auth = syra_AuthSettings($params);
+	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);	
+	
+	$domain_name = $params["sld"].".".$params["tld"];
+	$regperiod = $params["regperiod"];
+	
+	$response = $syra_domain->renew(array("DomainName" => $domain_name, "RenewalPeriod" => $regperiod));
+	
+  if (isset($response->Errors)) {	 
+    $values["error"] = syra_ProcessAPIErrors($response);
+  }
+  
   return $values;
 }
 
