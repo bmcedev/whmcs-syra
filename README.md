@@ -1,5 +1,7 @@
 # WHMCS Syra Module
 
+This module is a work in progress.
+
 ## Developer Notes
 
 WHMCS Documentation: http://docs.whmcs.com/Registrar_Module_Developer_Docs 
