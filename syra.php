@@ -156,17 +156,43 @@ function syra_RegisterDomain($params) {
 
 
 // DOMAINS LOCK STATUS
-function syra_GetRegistrarLock($params) {  
-  $auth = syra_AuthSettings($params);
-	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);		  
-  $domain_name = $params["sld"].".".$params["tld"];
-  $domain_info = $syra_domain->info(array("DomainName" => $domain_name));
-  if (isset($domain_info->LockStatus)) {
-    return strtolower($domain_info->LockStatus);
-  }  
-}
-
-function syra_SaveRegistrarLock($params) {
-  var_dump($params);
-  die();
-}
+// INVESTIGATE IT APPEARS LOCK STATUS MAY NOT BE UPDATABLE VIA API :(
+//function syra_GetRegistrarLock($params) {  
+//  $auth = syra_AuthSettings($params);
+//	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);		  
+//  $domain_name = $params["sld"].".".$params["tld"];
+//  $domain_info = $syra_domain->info(array("DomainName" => $domain_name));
+//  if (isset($domain_info->LockStatus)) {
+//    return strtolower($domain_info->LockStatus);
+//  }  
+//}
+//
+//function syra_SaveRegistrarLock($params) {
+//  $auth = syra_AuthSettings($params);
+//	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);		  
+//  
+//  $domain_name = $params["sld"].".".$params["tld"];
+//  $domain_info = $syra_domain->info(array("DomainName" => $domain_name));
+//  
+//  if ($params["lockenabled"]) {
+//		$lockstatus="Locked";
+//	} else {
+//		$lockstatus="Unlocked";
+//	}
+//  
+//  $request = array("DomainName" => $domain_name,
+//             "AdminContactIdentifier" => $domain_info->AdminContactIdentifier,
+//             "BillingContactIdentifier" => $domain_info->BillingContactIdentifier,
+//             "TechContactIdentifier" => $domain_info->TechContactIdentifier,
+//             "NameServers" => $domain_info->NameServers,
+//             "LockStatus" => $lockstatus);
+//  
+//  $response = $syra_domain->update($request);
+//  
+//  if (isset($domain_info->LockStatus)) {
+//    $values["lockenabled"] = strtolower($domain_info->LockStatus);
+//  } else {
+//    $values["error"] = syra_ProcessAPIErrors($response);
+//  }
+//  return $values;
+//}
