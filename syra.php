@@ -8,6 +8,10 @@ include_once "{$dir}/syra/lib/host.php";
 include_once "{$dir}/syra/lib/transfer.php";
 include_once "{$dir}/syra/lib/reseller.php";
 
+function syra_isNullOrEmptyString($string){
+  return (!isset($string) || trim($string)==='');
+}
+
 function syra_getConfigArray() {
 	$configarray = array(
 	 "ResellerID" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your reseller id here", ),
@@ -18,14 +22,17 @@ function syra_getConfigArray() {
 }
 
 function syra_isTestMode($test_mode) {
-  if($test_mode=="on") {
-    return true;
-  } else {
-    return false;
-  }
+  if(syra_isNullOrEmptyString($testmode)) {
+    if($test_mode=="on") { return true; } else { return false; }
+  } else { return false; }    
 }
 
-function syra_processAPIErrors($response) {
+function syra_AuthSettings($params) {
+	return array("ResellerID" => $params["ResellerID"], "APIKey" => $params["APIKey"], 
+	      "TestMode" => syra_isTestMode($params["TestMode"]));
+}
+
+function syra_ProcessAPIErrors($response) {
   $i = 0;
   if (isset($response->Errors)) {	
     $error_message = "";
@@ -41,28 +48,63 @@ function syra_processAPIErrors($response) {
   }
 }
 
-function syra_GetNameservers($params) {
-  $reseller_id = $params["ResellerID"];
-	$api_key = $params["APIKey"];
-	$test_mode = syra_isTestMode($params["TestMode"]);
-	$tld = $params["tld"];
-	$sld = $params["sld"];
-	
-	$request = array("DomainName" => $sld.".".$tld);
-	$syra_domain = new SyraDomain($reseller_id, $api_key, $test_mode);
-	
-	// TODO: MODULE LOG & POSSIBLE CACHING
-	$response = $syra_domain->info($request);	
-	
-	//var_dump($response);
-	if (isset($response->NameServers)) {	  
-	  $i = 0;
-    foreach ($response->NameServers as $nameserver) {
-      $i++;
-      $values["ns".$i] = $nameserver->Host;
-    }
-  } else {
-    $values["error"] = syra_processAPIErrors($response);
-  }	
-	return $values;
+
+function syra_GetNameServerArray($params) {
+  $nameservers = array();
+  for ($i = 1; $i <= 5; $i++) {
+    $nameserver = "ns".$i;
+    if(!syra_isNullOrEmptyString($params[$nameserver])) {
+      array_push($nameservers, array("Host" => $params[$nameserver],
+       "IP" => gethostbyname($params[$nameserver]))); 
+    }    
+  }
+  return $nameservers;
 }
+
+function syra_ProcessNameServerResponse($response) {
+  if (!isset($response->Errors)) {
+    if (isset($response->NameServers)) {	  
+  	  $i = 0;
+      foreach ($response->NameServers as $nameserver) {
+        $i++;
+        $values["ns".$i] = $nameserver->Host;
+      }
+    }	 
+  } else {
+    $values["error"] = syra_ProcessAPIErrors($response);
+  }
+  return $values;
+}
+
+function syra_GetNameservers($params) {
+  $auth = syra_AuthSettings($params);
+	$syra_domain = new SyraDomain($auth["ResellerID"], $auth["APIKey"], $auth["TestMode"]);
+	
+	$domain_name = $params["sld"].".".$params["tld"];
+	$request = array("DomainName" => $domain_name);	
+	
+	$response = $syra_domain->info($request);	
+	return syra_ProcessNameServerResponse($response); ;
+}
+
+function syra_SaveNameservers($params) {
+  $auth = syra_AuthSettings($params);
+  $syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);
+  
+  $domain_name = $params["sld"].".".$params["tld"];
+	$request = array("DomainName" => $domain_name);
+  $nameservers = syra_GetNameServerArray($params);
+  
+  $domain_info = $syra_domain->info(array("DomainName" => $domain_name));
+  
+  $request = array("DomainName" => $domain_name,
+             "AdminContactIdentifier" => $domain_info->AdminContactIdentifier,
+             "BillingContactIdentifier" => $domain_info->BillingContactIdentifier,
+             "TechContactIdentifier" => $domain_info->TechContactIdentifier,
+             "NameServers" => $nameservers);
+  
+  $response = $syra_domain->update($request);
+  return syra_ProcessNameServerResponse($response);
+}
+
+
