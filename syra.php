@@ -8,7 +8,7 @@ include_once "{$dir}/syra/lib/host.php";
 include_once "{$dir}/syra/lib/transfer.php";
 include_once "{$dir}/syra/lib/reseller.php";
 
-// SETUP
+// MODULE SETUP
 function syra_getConfigArray() {
 	$configarray = array(
 	 "ResellerID" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your reseller id here", ),
@@ -19,7 +19,7 @@ function syra_getConfigArray() {
 }
 
 
-// GENERIC
+// GENERIC FUNCTIONS
 function syra_isNullOrEmptyString($string){
   return (!isset($string) || trim($string)==='');
 }
@@ -52,7 +52,7 @@ function syra_ProcessAPIErrors($response) {
 }
 
 
-// NAMESERVERS
+// NAMESERVER FUNCTIONS
 function syra_GetNameServerArray($params) {
   $nameservers = array();
   for ($i = 1; $i <= 5; $i++) {
@@ -112,21 +112,7 @@ function syra_SaveNameservers($params) {
 }
 
 
-// CONTACTS
-function syra_GetContactDetails($params) {
-  $auth = syra_AuthSettings($params);
-  $reseller = new SyraReseller($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);
-  $response = $reseller->get_domain_list();
-  var_dump($response);
-}
-
-function syra_SaveContactDetails($params) {
-  $auth = syra_AuthSettings($params);
-  var_dump($params);
-}
-
-
-// DOMAINS
+// DOMAIN FUNCTIONS
 function syra_RegisterDomain($params) {
   $auth = syra_AuthSettings($params);
 	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);	
@@ -154,6 +140,47 @@ function syra_RegisterDomain($params) {
   return $values;
 }
 
+function syra_TransferDomain($params) {
+  $values["error"] = "TRANSFER NOT IMPLEMENTED YET";
+  return $values;
+}
+  
+function syra_RenewDomains($params) {
+  $values["error"] = "RENEW NOT IMPLEMENTED YET";
+  return $values;
+}
+
+
+// CONTACT FUNCTIONS
+function syra_GetContactDetails($params) {
+  $auth = syra_AuthSettings($params);
+  $reseller = new SyraReseller($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);
+  $response = $reseller->get_domain_list();
+  var_dump($response);
+  $values["error"] = "GET CONTACT DETAILS NOT IMPLEMENTED YET";
+  return $values;
+}
+
+function syra_SaveContactDetails($params) {
+  $auth = syra_AuthSettings($params);
+  var_dump($params);
+  $values["error"] = "SAVE CONTACT DETAILS NOT IMPLEMENTED YET";
+  return $values;
+}
+
+
+//====================================================================
+// ADDITIONAL WHMCS FUNCTIONS NOT IMPLEMENTED
+//====================================================================
+
+// function syra_GetEmailForwarding($params) {} NOT SUPPORTED
+// function syra_SaveEmailForwarding($params) {} NOT SUPPORTED
+// function syra_GetDNS($params) {}  NOT SUPPORTED
+// function syra_SaveDNS($params) {} NOT SUPPORTED
+// function syra_GetEPPCode($params) {} NOT SUPPORTED
+// function syra_RegisterNameserver($params) {} WILL POSSIBLY IMPLEMENT
+// function syra_ModifyNameServer($params) {} WILL POSSIBLY IMPLEMENT
+// function syra_DeleteNameServer($params) {} WILL POSSIBLY IMPLEMENT
 
 // DOMAINS LOCK STATUS
 // INVESTIGATE IT APPEARS LOCK STATUS MAY NOT BE UPDATABLE VIA API :(
@@ -166,7 +193,6 @@ function syra_RegisterDomain($params) {
 //    return strtolower($domain_info->LockStatus);
 //  }  
 //}
-//
 //function syra_SaveRegistrarLock($params) {
 //  $auth = syra_AuthSettings($params);
 //	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);		  
@@ -196,3 +222,4 @@ function syra_RegisterDomain($params) {
 //  }
 //  return $values;
 //}
+  
