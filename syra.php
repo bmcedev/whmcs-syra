@@ -10,12 +10,14 @@ include_once "{$dir}/syra/lib/reseller.php";
 
 // MODULE SETUP
 function syra_getConfigArray() {
-	$configarray = array(
-	 "ResellerID" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your reseller id here", ),
-	 "APIKey" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your api key here", ),
-	 "TestMode" => array( "Type" => "yesno", )
-	);
-	return $configarray;
+  $configarray = array(
+   "ResellerID" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your reseller id here"),
+   "APIKey" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your api key here"),
+   "TestMode" => array( "Type" => "yesno"),
+   'FriendlyName' => array('Type' => 'System', 'Value' => 'Syra Reseller System'),
+   'Description' => array('Type' => 'System', 'Value' => 'Aust Domains/Crazy Domains Reseller Program'),
+  );
+  return $configarray;
 }
 
 
@@ -31,13 +33,13 @@ function syra_isTestMode($test_mode) {
 }
 
 function syra_AuthSettings($params) {
-	return array("ResellerID" => $params["ResellerID"], "APIKey" => $params["APIKey"], 
-	      "TestMode" => syra_isTestMode($params["TestMode"]));
+  return array("ResellerID" => $params["ResellerID"], "APIKey" => $params["APIKey"], 
+        "TestMode" => syra_isTestMode($params["TestMode"]));
 }
 
 function syra_ProcessAPIErrors($response) {
   $i = 0;
-  if (isset($response->Errors)) {	
+  if (isset($response->Errors)) { 
     $error_message = "";
     foreach ($response->Errors as $error) {  
       if($i==0) { $breaktag = ""; } else { $breaktag = "<br />"; }
@@ -67,13 +69,13 @@ function syra_GetNameServerArray($params) {
 
 function syra_ProcessNameServerResponse($response) {
   if (!isset($response->Errors)) {
-    if (isset($response->NameServers)) {	  
-  	  $i = 0;
+    if (isset($response->NameServers)) {    
+      $i = 0;
       foreach ($response->NameServers as $nameserver) {
         $i++;
         $values["ns".$i] = $nameserver->Host;
       }
-    }	 
+    }  
   } else {
     $values["error"] = syra_ProcessAPIErrors($response);
   }
@@ -82,13 +84,13 @@ function syra_ProcessNameServerResponse($response) {
 
 function syra_GetNameservers($params) {
   $auth = syra_AuthSettings($params);
-	$syra_domain = new SyraDomain($auth["ResellerID"], $auth["APIKey"], $auth["TestMode"]);
-	
-	$domain_name = $params["sld"].".".$params["tld"];
-	$request = array("DomainName" => $domain_name);	
-	
-	$response = $syra_domain->info($request);	
-	return syra_ProcessNameServerResponse($response); ;
+  $syra_domain = new SyraDomain($auth["ResellerID"], $auth["APIKey"], $auth["TestMode"]);
+  
+  $domain_name = $params["sld"].".".$params["tld"];
+  $request = array("DomainName" => $domain_name); 
+  
+  $response = $syra_domain->info($request); 
+  return syra_ProcessNameServerResponse($response);
 }
 
 function syra_SaveNameservers($params) {
@@ -96,7 +98,7 @@ function syra_SaveNameservers($params) {
   $syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);
   
   $domain_name = $params["sld"].".".$params["tld"];
-	$request = array("DomainName" => $domain_name);
+  $request = array("DomainName" => $domain_name);
   $nameservers = syra_GetNameServerArray($params);
   
   $domain_info = $syra_domain->info(array("DomainName" => $domain_name));
@@ -113,26 +115,30 @@ function syra_SaveNameservers($params) {
 
 
 // DOMAIN FUNCTIONS
-function syra_RegisterDomain($params) {
+function syra_disabled_RegisterDomain($params) {
   $auth = syra_AuthSettings($params);
-	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);	
-	
-	$domain_name = $params["sld"].".".$params["tld"];
-	
-	$request = array(
-	  "DomainName" => $sld.".".$tld,
-	  "RegistrationPeriod" => $params["regperiod"],
-	  "RegistrantContactIdentifier" => "",
-	  #"AdminContactIdentifier" => "",
-	  #"BillingContactIdentifier" => "",
-	  #"TechContactIdentifier" => "",
-	  "Eligibility" => "",	  
-	  "NameServers" => syra_GetNameServerArray($params)
-	);		
-			
-	//$response = $syra_domain->create($request);	
-	
-	if (!isset($response->Errors)) {	 
+  $syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]); 
+  
+  $domain_name = $params["sld"].".".$params["tld"];
+  
+  $request = array(
+    "DomainName" => $domain_name,
+    "RegistrationPeriod" => $params["regperiod"],
+    "RegistrantContactIdentifier" => "",
+    "AdminContactIdentifier" => "",
+    "BillingContactIdentifier" => "",
+    "TechContactIdentifier" => "",
+    "Eligibility" => "",    
+    "NameServers" => syra_GetNameServerArray($params)
+  );    
+  
+  var_dump($request); 
+  var_dump($auth);  
+  die();
+      
+  //$response = $syra_domain->create($request); 
+  
+  if (!isset($response->Errors)) {   
   } else {
     $values["error"] = syra_ProcessAPIErrors($response);
   }
@@ -140,39 +146,49 @@ function syra_RegisterDomain($params) {
   return $values;
 }
 
-function syra_TransferDomain($params) {
+function syra_disabled_TransferDomain($params) {
   $values["error"] = "TRANSFER NOT IMPLEMENTED YET";
   return $values;
 }
   
 function syra_RenewDomain($params) {
   $auth = syra_AuthSettings($params);
-	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);	
-	
-	$domain_name = $params["sld"].".".$params["tld"];
-	$regperiod = $params["regperiod"];
-	
-	$response = $syra_domain->renew(array("DomainName" => $domain_name, "RenewalPeriod" => $regperiod));
-	
-  if (isset($response->Errors)) {	 
+  $syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]); 
+  
+  $domain_name = $params["sld"].".".$params["tld"];
+  $regperiod = $params["regperiod"];
+  
+  $response = $syra_domain->renew(array("DomainName" => $domain_name, "RenewalPeriod" => $regperiod));
+  
+  if (isset($response->Errors)) {  
     $values["error"] = syra_ProcessAPIErrors($response);
   }
-  
   return $values;
 }
 
 
 // CONTACT FUNCTIONS
-function syra_GetContactDetails($params) {
+function syra_disabled_DomainContacts($params) {
+  
+}
+
+function syra_disabled_GetContactDetails($params) {
   $auth = syra_AuthSettings($params);
-  $reseller = new SyraReseller($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);
-  $response = $reseller->get_domain_list();
+  $syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);
+
+  $domain_name = $params['sld'].'.'.$params['tld'];
+  $request = array("DomainName" => $domain_name); 
+  
+  $response = $syra_domain->info($request);
+  
+  //$response = $reseller->get_domain_list();
+  
   var_dump($response);
   $values["error"] = "GET CONTACT DETAILS NOT IMPLEMENTED YET";
   return $values;
 }
 
-function syra_SaveContactDetails($params) {
+function syra_disabled_SaveContactDetails($params) {
   $auth = syra_AuthSettings($params);
   var_dump($params);
   $values["error"] = "SAVE CONTACT DETAILS NOT IMPLEMENTED YET";
@@ -184,20 +200,25 @@ function syra_SaveContactDetails($params) {
 // ADDITIONAL WHMCS FUNCTIONS NOT IMPLEMENTED
 //====================================================================
 
+// function syra_TransferSync($params)  {} NOT YET IMPLEMENTED
+// function syra_Sync($params) {} NOT YET IMPLEMENTED
+
+// function syra_RegisterNameserver($params) {} NOT YET IMPLEMENTED
+// function syra_ModifyNameServer($params) {} NOT YET IMPLEMENTED
+// function syra_DeleteNameServer($params) {} NOT YET IMPLEMENTED
+
 // function syra_GetEmailForwarding($params) {} NOT SUPPORTED
 // function syra_SaveEmailForwarding($params) {} NOT SUPPORTED
 // function syra_GetDNS($params) {}  NOT SUPPORTED
 // function syra_SaveDNS($params) {} NOT SUPPORTED
 // function syra_GetEPPCode($params) {} NOT SUPPORTED
-// function syra_RegisterNameserver($params) {} WILL POSSIBLY IMPLEMENT
-// function syra_ModifyNameServer($params) {} WILL POSSIBLY IMPLEMENT
-// function syra_DeleteNameServer($params) {} WILL POSSIBLY IMPLEMENT
+
 
 // DOMAINS LOCK STATUS
-// INVESTIGATE IT APPEARS LOCK STATUS MAY NOT BE UPDATABLE VIA API :(
+// NEED TO INVESTIGATE BUT IT APPEARS LOCK STATUS MAY NOT BE UPDATABLE VIA API :(
 //function syra_GetRegistrarLock($params) {  
 //  $auth = syra_AuthSettings($params);
-//	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);		  
+//  $syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);     
 //  $domain_name = $params["sld"].".".$params["tld"];
 //  $domain_info = $syra_domain->info(array("DomainName" => $domain_name));
 //  if (isset($domain_info->LockStatus)) {
@@ -206,16 +227,16 @@ function syra_SaveContactDetails($params) {
 //}
 //function syra_SaveRegistrarLock($params) {
 //  $auth = syra_AuthSettings($params);
-//	$syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);		  
+//  $syra_domain = new SyraDomain($auth['ResellerID'], $auth['APIKey'], $auth["TestMode"]);     
 //  
 //  $domain_name = $params["sld"].".".$params["tld"];
 //  $domain_info = $syra_domain->info(array("DomainName" => $domain_name));
 //  
 //  if ($params["lockenabled"]) {
-//		$lockstatus="Locked";
-//	} else {
-//		$lockstatus="Unlocked";
-//	}
+//    $lockstatus="Locked";
+//  } else {
+//    $lockstatus="Unlocked";
+//  }
 //  
 //  $request = array("DomainName" => $domain_name,
 //             "AdminContactIdentifier" => $domain_info->AdminContactIdentifier,
